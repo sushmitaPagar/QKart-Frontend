@@ -26,9 +26,7 @@ const Products = () => {
 
   return (
     <div>
-      <Header>
-
-      </Header>
+      <Header hasHiddenAuthButtons={true} ></Header>
 
        <Grid container>
          <Grid item className="product-grid">

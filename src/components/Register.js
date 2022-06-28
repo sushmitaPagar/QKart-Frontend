@@ -53,7 +53,7 @@ const Register = () => {
    */
   const register = async (formData) => {
     //validate all the input fields
-    console.log("formData ::", formData);
+    //console.log("formData ::", formData);
 
     if (validateInput(formData)) {
       // make a POST api call to submit the values
@@ -65,7 +65,7 @@ const Register = () => {
           "username": formData.username,
           "password": formData.password
         });
-        console.log("response ::", response);
+        //console.log("response ::", response);
         setLoading(false);
 
         setFormData({
@@ -141,7 +141,7 @@ const Register = () => {
       justifyContent="space-between"
       minHeight="100vh"
     >
-      <Header hasHiddenAuthButtons />
+      <Header hasHiddenAuthButtons={false} />
       <Box className="content">
         <Stack spacing={2} className="form">
           <h2 className="title">Register</h2>
@@ -189,9 +189,7 @@ const Register = () => {
           )}
           <p className="secondary-action">
             Already have an account?{" "}
-             <a className="link" href="#">
-              Login here
-             </a>
+            <Link to="/login" className="link">Login here</Link>
           </p>
         </Stack>
       </Box>
