@@ -13,6 +13,7 @@ import { config } from "../App";
 import Footer from "./Footer";
 import Header from "./Header";
 import "./Products.css";
+import ProductCard from "./ProductCard";
 
 // Definition of Data Structures used
 /**
@@ -28,6 +29,8 @@ import "./Products.css";
 
 
 const Products = () => {
+
+  const { enqueueSnackbar } = useSnackbar();
 
   // TODO: CRIO_TASK_MODULE_PRODUCTS - Fetch products data and store it
   /**
@@ -67,6 +70,15 @@ const Products = () => {
    * }
    */
   const performAPICall = async () => {
+
+    try {
+      const url = config.endpoint + '/products';
+      const response = await axios.get(url);
+      console.log("products response :: ", response.data);
+
+    } catch (error) {
+      enqueueSnackbar(error.response.data.message, { variant: "error" });
+    }
   };
 
   // TODO: CRIO_TASK_MODULE_PRODUCTS - Implement search logic
@@ -101,15 +113,14 @@ const Products = () => {
   const debounceSearch = (event, debounceTimeout) => {
   };
 
-
-
-
-
-
+  useEffect(() => {
+    // code to run after render goes here
+    performAPICall();
+  }, []);
 
   return (
     <div>
-      <Header>
+      <Header hasHiddenAuthButtons={true}>
         {/* TODO: CRIO_TASK_MODULE_PRODUCTS - Display search bar in the header for Products page */}
 
       </Header>
@@ -138,7 +149,8 @@ const Products = () => {
              </p>
            </Box>
          </Grid>
-       </Grid>
+      </Grid>
+      <ProductCard />
       <Footer />
     </div>
   );
