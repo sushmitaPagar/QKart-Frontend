@@ -7,14 +7,10 @@ import { useHistory } from "react-router-dom";
 
 const Header = ({ children, hasHiddenAuthButtons }) => {
 
-  //console.log("hasHiddenAuthButtons :: ", hasHiddenAuthButtons);
-
   const history = useHistory();
 
   const checkForUser = () => {
     let user = window.localStorage.getItem("username");
-    //console.log("user ::", user);
-    
     return user;
   };
 
@@ -23,7 +19,6 @@ const Header = ({ children, hasHiddenAuthButtons }) => {
   };
 
   const linkToLogout = () => {
-    // window.localStorage.removeItem("loggedInUser");
     window.localStorage.clear();
     history.push("/");
     window.location.reload();
@@ -42,6 +37,7 @@ const Header = ({ children, hasHiddenAuthButtons }) => {
         <Box className="header-title">
             <img src="logo_light.svg" alt="QKart-icon"></img>
         </Box>
+        {hasHiddenAuthButtons && children}
         {!hasHiddenAuthButtons ? (
           <Button
                 className="explore-button"

@@ -14,6 +14,17 @@ import Footer from "./Footer";
 import Header from "./Header";
 import "./Products.css";
 import ProductCard from "./ProductCard";
+import { styled } from '@mui/material/styles';
+import Paper from '@mui/material/Paper';
+
+//Item styling for cards
+const Item = styled(Paper)(({ theme }) => ({
+  backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
+  ...theme.typography.body2,
+  padding: theme.spacing(1),
+  textAlign: 'center',
+  color: theme.palette.text.secondary,
+}));
 
 // Definition of Data Structures used
 /**
@@ -31,6 +42,9 @@ import ProductCard from "./ProductCard";
 const Products = () => {
 
   const { enqueueSnackbar } = useSnackbar();
+  const [loading, setLoading] = useState(false);
+  const [dataArray, setDataArray] = useState([]);
+  const [debounceTimeout, setDebounceTimeout] = useState(0);
 
   // TODO: CRIO_TASK_MODULE_PRODUCTS - Fetch products data and store it
   /**
@@ -72,10 +86,14 @@ const Products = () => {
   const performAPICall = async () => {
 
     try {
+      setLoading(true);
       const url = config.endpoint + '/products';
       const response = await axios.get(url);
-      console.log("products response :: ", response.data);
-
+      if(response.status === 200 || response.status === 201)
+        setDataArray(response.data);
+      
+      setLoading(false);
+      return response.data;
     } catch (error) {
       enqueueSnackbar(error.response.data.message, { variant: "error" });
     }
@@ -96,6 +114,23 @@ const Products = () => {
    *
    */
   const performSearch = async (text) => {
+    let erres = null;
+    try{
+      const url = config.endpoint + `/products/search?value=${text}`;
+      const response = await axios.get(url);
+      
+      if (response) {
+        return response.data;
+      }
+    }catch(error){
+      if (error.response) {
+        erres = error.response;
+      } else {
+        console.log(error);
+      }
+    }
+    if(erres)
+      return erres.data;
   };
 
   // TODO: CRIO_TASK_MODULE_PRODUCTS - Optimise API calls with debounce search implementation
@@ -111,6 +146,13 @@ const Products = () => {
    *
    */
   const debounceSearch = (event, debounceTimeout) => {
+    if (debounceTimeout !== 0) {
+      clearTimeout(debounceTimeout);
+    }
+    const timeout = setTimeout(async () => {
+      setDataArray(await performSearch(event.target.value));
+    }, 500);
+    setDebounceTimeout(timeout);
   };
 
   useEffect(() => {
@@ -122,7 +164,22 @@ const Products = () => {
     <div>
       <Header hasHiddenAuthButtons={true}>
         {/* TODO: CRIO_TASK_MODULE_PRODUCTS - Display search bar in the header for Products page */}
-
+        <TextField
+        className="search-desktop"
+        size="small"
+        InputProps={{
+          endAdornment: (
+            <InputAdornment position="end">
+              <Search color="primary" />
+            </InputAdornment>
+          ),
+        }}
+        placeholder="Search for items/categories"
+        name="search"
+        onChange={(e) => {
+          debounceSearch(e, debounceTimeout);
+        }}
+        />
       </Header>
 
       {/* Search view for mobiles */}
@@ -139,6 +196,9 @@ const Products = () => {
         }}
         placeholder="Search for items/categories"
         name="search"
+        onChange={(e) => {
+          debounceSearch(e, debounceTimeout);
+        }}
       />
        <Grid container>
          <Grid item className="product-grid">
@@ -150,7 +210,31 @@ const Products = () => {
            </Box>
          </Grid>
       </Grid>
-      <ProductCard />
+      {loading ? (
+        <Box display="flex" justifyContent="center" alignItems="center">
+          <CircularProgress />
+          <p>Loading Products...</p>
+        </Box>
+      ) : ( dataArray.length === 0 ? (
+        <Box spacing={2} className="loading">
+          <SentimentDissatisfied />
+          <p>No products found</p>
+        </Box>
+      ) : (
+        <Grid container spacing={2}>
+                {dataArray.map((data)=>{
+                  return (
+                    <Grid item xs={6} md={3} key={data._id}>
+                      <Item>
+                        <ProductCard product={data} key={data._id}/>
+                      </Item>
+                    </Grid>
+                    );
+                  })
+                }
+            </Grid>
+        )
+      )}
       <Footer />
     </div>
   );
