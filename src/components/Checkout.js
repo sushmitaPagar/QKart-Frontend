@@ -226,35 +226,6 @@ const Checkout = () => {
       return null;
     }
   };
-  // const getAddresses = async (token) => {
-  //   if (!token) { enqueueSnackbar(
-  //     "You must be logged in to access checkout page",
-  //     {
-  //       variant: "error",
-  //     }
-  //   );
-  //   history.push('/login')
-  //   return null
-  // }
-  //   try {
-  //     const response = await axios.get(`${config.endpoint}/user/addresses`, {
-  //       headers: {
-  //         Authorization: `Bearer ${token}`,
-  //       },
-  //     });
-
-  //     setAddresses({ ...addresses, all: response.data });
-  //     return response.data;
-  //   } catch {
-  //     enqueueSnackbar(
-  //       "Could not fetch addresses. Check that the backend is running, reachable and returns valid JSON.",
-  //       {
-  //         variant: "error",
-  //       }
-  //     );
-  //     return null;
-  //   }
-  // };
 
   /**
    * Handler function to add a new address and display the latest list of addresses
@@ -518,7 +489,7 @@ const Checkout = () => {
 
    return (
     <>
-      <Header />
+      <Header hasHiddenAuthButtons={true} />
       <Grid container>
         <Grid item xs={12} md={9}>
           <Box className="shipping-container" minHeight="100vh">
