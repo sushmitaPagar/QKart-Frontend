@@ -58,7 +58,6 @@ const Login = () => {
 
     if (validateInput(formData)) {
       try {
-        setLoading(true);
         const url = config.endpoint + '/auth/login';
         const response = await axios.post(url, {
           "username": formData.username,
@@ -77,7 +76,6 @@ const Login = () => {
         }
       
         history.push("/");
-        setLoading(false);
         
       } catch (error) {
         setLoading(false);

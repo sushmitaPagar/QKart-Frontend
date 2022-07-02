@@ -50,8 +50,8 @@ const Header = ({ children, hasHiddenAuthButtons }) => {
         ) : (
            checkForUser() ? (
             <Stack direction="row" spacing={2}>
-                <Avatar alt={window.localStorage.getItem("username")} src="public/avatar.png" />
-                <p>{window.localStorage.getItem("username")}</p>
+                <Avatar alt={window.localStorage.getItem("username")} src="avatar.png" />
+                <p style={{marginTop:"12px"}}>{window.localStorage.getItem("username")}</p>
                 <Button className="button" variant="text" onClick={linkToLogout}>
                   Logout
                 </Button>

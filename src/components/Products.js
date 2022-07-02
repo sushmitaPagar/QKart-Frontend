@@ -16,6 +16,8 @@ import "./Products.css";
 import ProductCard from "./ProductCard";
 import { styled } from '@mui/material/styles';
 import Paper from '@mui/material/Paper';
+import Cart from "./Cart";
+import {generateCartItemsFrom} from "./Cart";
 
 //Item styling for cards
 const Item = styled(Paper)(({ theme }) => ({
@@ -52,6 +54,25 @@ const Products = () => {
   const [loading, setLoading] = useState(false);
   const [dataArray, setDataArray] = useState([]);
   const [debounceTimeout, setDebounceTimeout] = useState(0);
+  const [fetchedcart, setFetchedcart] = useState([]);
+  const [cartList, setCartList] = useState([]);
+
+  useEffect(() => {
+    // code to run after render goes here
+    const callApi = async () => {
+      setLoading(true)
+      const getProducts = await performAPICall();
+      setLoading(false)
+      setDataArray(getProducts);       
+      if(localStorage.getItem('username')){     
+      const getCart= await fetchCart(localStorage.getItem("token"))     
+      setFetchedcart(getCart)
+      setCartList(generateCartItemsFrom(getCart,getProducts))
+      }
+      // console.log("inside useeffect",fetchedcart,res)
+    };
+    callApi();
+  }, []);
 
   // TODO: CRIO_TASK_MODULE_PRODUCTS - Fetch products data and store it
   /**
@@ -162,11 +183,6 @@ const Products = () => {
     setDebounceTimeout(timeout);
   };
 
-  useEffect(() => {
-    // code to run after render goes here
-    performAPICall();
-  }, []);
-
    /**
    * Perform the API call to fetch the user's cart and return the response
    *
@@ -200,6 +216,14 @@ const Products = () => {
   
       try {
         // TODO: CRIO_TASK_MODULE_CART - Pass Bearer token inside "Authorization" header to get data from "GET /cart" API and return the response data
+        const url = config.endpoint + "/cart";
+        const response = await axios.get(url, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        console.log("cart data response ::", response);
+        return response.data;
       } catch (e) {
         if (e.response && e.response.status === 400) {
           enqueueSnackbar(e.response.data.message, { variant: "error" });
@@ -230,6 +254,10 @@ const Products = () => {
      *
      */
     const isItemInCart = (items, productId) => {
+      const prodIds = items.map((item)=>{
+        return item.productId;
+      })    
+      return (prodIds.includes(productId));  
     };
   
     /**
@@ -276,6 +304,36 @@ const Products = () => {
       qty,
       options = { preventDuplicate: false }
     ) => {
+      try {
+        // console.log(token,items,products,productId,qty,options)
+        if (!token) {
+          enqueueSnackbar("Login to add an item to the Cart", {
+            variant: "error",
+          });
+        } else if (options.preventDuplicate && isItemInCart(items, productId)) {        
+            enqueueSnackbar(
+              "Item already in cart. Use the cart sidebar to update quantity or remove item.",
+              { variant: "error" }
+            );        
+        } else {
+          console.log(token,items,products,productId,qty,options)
+          const res = await axios.post(
+            `${config.endpoint}/cart`,
+            { productId: productId, qty: qty },
+            {
+              headers: { Authorization: "Bearer " + token }
+            }
+          );
+          console.log(res.data)
+          setFetchedcart(res.data);
+          setCartList(generateCartItemsFrom(res.data, products));
+          // console.log("inside useeffect",fetchedcart,res)
+        }
+      } catch (e) {
+        if (e.response) {
+          enqueueSnackbar(e.response.data.message, { variant: "error" });
+        }
+      }
     };
   
   return (
@@ -314,50 +372,56 @@ const Products = () => {
         }}
         placeholder="Search for items/categories"
         name="search"
-<<<<<<< HEAD
         onChange={(e) => {
           debounceSearch(e, debounceTimeout);
         }}
       />
-       <Grid container>
-         <Grid item className="product-grid">
-           <Box className="hero">
-             <p className="hero-heading">
-               India’s <span className="hero-highlight">FASTEST DELIVERY</span>{" "}
-               to your door step
-             </p>
-           </Box>
-         </Grid>
-      </Grid>
-      {loading ? (
-        <Box display="flex" justifyContent="center" alignItems="center">
-          <CircularProgress />
-          <p>Loading Products...</p>
-        </Box>
-      ) : ( dataArray.length === 0 ? (
-        <Box spacing={2} className="loading">
-          <SentimentDissatisfied />
-          <p>No products found</p>
-        </Box>
-      ) : (
-        <Grid container spacing={2}>
-                {dataArray.map((data)=>{
-                  return (
-                    <Grid item xs={6} md={3} key={data._id}>
-                      <Item>
-                        <ProductCard product={data} key={data._id}/>
-                      </Item>
-                    </Grid>
-                    );
-                  })
-                }
+      <Grid container>
+        <Grid item md={window.localStorage.getItem("username")?9:12}>
+          <Grid container>
+            <Grid item className="product-grid">
+              <Box className="hero">
+                <p className="hero-heading">
+                  India’s <span className="hero-highlight">FASTEST DELIVERY</span>{" "}
+                  to your door step
+                </p>
+              </Box>
             </Grid>
-        )
-      )}
-=======
-      />
-        {/* TODO: CRIO_TASK_MODULE_CART - Display the Cart component */}
->>>>>>> e7ef4956fa0d9eed00ff1db4b4fed8bbb6626109
+            </Grid>
+            {loading ? (
+              <Box display="flex" justifyContent="center" alignItems="center">
+                <CircularProgress />
+                <p>Loading Products...</p>
+              </Box>
+            ) : ( dataArray.length === 0 ? (
+              <Box spacing={2} className="loading">
+                <SentimentDissatisfied />
+                <p>No products found</p>
+              </Box>
+            ) : (
+              <Grid container spacing={2}>
+                      {dataArray.map((data)=>{
+                        return (
+                          <Grid item xs={6} md={3} key={data._id}>
+                            <Item>
+                              <ProductCard product={data} handleAddToCart={()=>addToCart(
+                  localStorage.getItem("token"),fetchedcart,dataArray,data._id,1,{preventDuplicate:true}
+                )} key={data._id}/>
+                            </Item>
+                          </Grid>
+                          );
+                        })
+                      }
+                  </Grid>
+              )
+            )}
+        </Grid>
+        {window.localStorage.getItem("username") && 
+          <Grid item md={3}>
+            <Cart products={dataArray} items={cartList} handleQuantity={addToCart} />
+          </Grid>
+        }
+      </Grid>
       <Footer />
     </div>
   );
