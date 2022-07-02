@@ -222,7 +222,7 @@ const Products = () => {
             'Authorization': `Bearer ${token}`
           }
         });
-        console.log("cart data response ::", response);
+        //console.log("cart data response ::", response);
         return response.data;
       } catch (e) {
         if (e.response && e.response.status === 400) {
@@ -316,7 +316,7 @@ const Products = () => {
               { variant: "error" }
             );        
         } else {
-          console.log(token,items,products,productId,qty,options)
+          //console.log(token,items,products,productId,qty,options)
           const res = await axios.post(
             `${config.endpoint}/cart`,
             { productId: productId, qty: qty },
@@ -324,7 +324,7 @@ const Products = () => {
               headers: { Authorization: "Bearer " + token }
             }
           );
-          console.log(res.data)
+          //console.log(res.data)
           setFetchedcart(res.data);
           setCartList(generateCartItemsFrom(res.data, products));
           // console.log("inside useeffect",fetchedcart,res)
